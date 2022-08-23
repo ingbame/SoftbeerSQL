@@ -71,6 +71,11 @@ CREATE TABLE [Sec].[Users](
 	CONSTRAINT FK_Sec_Users_RolId FOREIGN KEY (RoleId) REFERENCES [App].[Roles](RoleId)
 )
 GO
+INSERT INTO [Sec].[Users]
+	(UserName, [Password], [PasswordSalt], RoleId, CanEdit,	IsActive)
+VALUES
+	('8116836441','lwkTti5oNvMw9vm2uECxNNdHDC7PX5UQ81L88DTinh8=','0OkeXSNNyZqau6DFPuh9Cg==',1,1,1)
+GO
 CREATE TABLE [Sec].[PasswordsHistory](
 	HistoryId BIGINT IDENTITY(1,1),
 	UserId BIGINT NOT NULL,
@@ -110,6 +115,11 @@ CREATE TABLE [App].[Members](
 	CONSTRAINT FK_Fina_Members_UserId FOREIGN KEY (UserId) REFERENCES [Sec].[Users](UserId),
 	CONSTRAINT FK_Fina_Members_BTSideId FOREIGN KEY (BTSideId) REFERENCES [Stats].[BattingThrowingSides](BTSideId)
 )
+GO
+INSERT INTO [App].[Members] 
+	(UserId, FullName, NickName, ShirtNumber, BTSideId, PhotoUrl, Birthday, Email, CellPhoneNumber)
+VALUES 
+	(1, 'Baruch Iván Medina Ramos', 'Baruch Medina', 26, 3, NULL, '1990-12-26', 'ingbame@gmail.com', '+528116836441')
 GO
 CREATE TABLE [Stats].[Positions](
 	PositionId SMALLINT IDENTITY(1,1),
@@ -189,12 +199,12 @@ GO
 INSERT INTO [Fina].[Concepts]
 	(ConceptTypeId,ConceptKey,ConceptDesc)
 VALUES
-	(1,'INS','Inscripci�n'),
+	(1,'INS','Inscripción'),
 	(1,'AMP','Ampayeo'),
 	(1,'UNI','Uniformes'),
 	(1,'AJT','Ajuste'),
-	(2,'HID','Hidrataci�n'),
-	(2,'INS','Inscripci�n'),
+	(2,'HID','Hidratación'),
+	(2,'INS','Inscripción'),
 	(2,'AMP','Ampayeo'),
 	(2,'UNI','Uniformes')
 GO
