@@ -1,10 +1,14 @@
-DROP TABLE [Fina].[Bills]
+DROP PROCEDURE [App].[SPSelMembers]
 GO
-DROP TABLE [Fina].[Income]
+DROP PROCEDURE [Fina].[SPSelMovementsByMonthYear]
+GO
+DROP PROCEDURE [Fina].[SPSelMovements]
+GO
+DROP TABLE [Fina].[Movements]
+GO
+DROP TABLE [Fina].[MovementTypes]
 GO
 DROP TABLE [Fina].[Concepts]
-GO
-DROP TABLE [Fina].[ConceptTypes]
 GO
 DROP TABLE [Fina].[PaymentMethods]
 GO

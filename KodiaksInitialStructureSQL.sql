@@ -8,8 +8,9 @@ CREATE SCHEMA [Stats]
 GO
 CREATE TABLE [App].[Roles](
 	RoleId INT IDENTITY(1,1),
-	RoleDescription VARCHAR(60) NOT NULL UNIQUE,
-	CONSTRAINT PK_App_Roles_Id PRIMARY KEY (RoleId)
+	RoleDescription VARCHAR(60) NOT NULL,
+	CONSTRAINT PK_App_Roles_Id PRIMARY KEY (RoleId),
+	CONSTRAINT UQ_App_Roles_RoleDescription UNIQUE (RoleDescription)
 )
 GO
 SET IDENTITY_INSERT [App].[Roles] ON; 
@@ -23,22 +24,26 @@ SET IDENTITY_INSERT [App].[Roles] OFF;
 GO
 CREATE TABLE [App].[MenuItems](
 	MenuItemId INT IDENTITY(1,1),
-	Title VARCHAR(50) NOT NULL UNIQUE,
-	IconSource VARCHAR(100) NULL,
-	TargetPage VARCHAR(150) NOT NULL UNIQUE, 
-	CONSTRAINT PK_App_MenuItems_Id PRIMARY KEY (MenuItemId)
+	ItemKey VARCHAR(15) NOT NULL,
+	IconSource VARCHAR(100) NULL
+	CONSTRAINT PK_App_MenuItems_Id PRIMARY KEY (MenuItemId),
+	CONSTRAINT UQ_App_MenuItems_ItemKey UNIQUE (ItemKey)
 )
 GO
 SET IDENTITY_INSERT [App].[MenuItems] ON; 
 INSERT INTO [App].[MenuItems]
-	(MenuItemId,Title,IconSource,TargetPage)
+	(MenuItemId,ItemKey,IconSource)
 VALUES
-	(1,'Inicio', 'icon_about.png', 'KodiaksApp.Detail'),
-	(2,'Usuarios', 'icon_feed.png', 'KodiaksApp.Views.vwUsuarios'),
-	(3,'Finanzas', 'icon_feed.png', 'KodiaksApp.Views.vwFinanzas'),
-	(4,'Roster', 'icon_feed.png', 'KodiaksApp.Views.vwRoster'),
-	(5,'Juegos', 'icon_feed.png', 'KodiaksApp.Views.vwJuegos'),
-	(6,'Asistencia', 'icon_feed.png', 'KodiaksApp.Views.vwAsistencia')
+	(1,'Home', 'fa-solid fa-house'),
+	(2,'Roles', 'fa-solid fa-shield-halved'),
+	(3,'Menu', 'fa-regular fa-sitemap'),
+	(4,'Members', 'fa-regular fa-users'),
+	(5,'Stats', 'fa-solid fa-baseball-bat-ball'),
+	(6,'Positions', 'fa-regular fa-location-dot'),
+	(7,'Roster', 'fa-regular fa-clipboard-user'),
+	(8,'Concepts', 'fa-solid fa-file-invoice'),
+	(9,'Movements', 'fa-solid fa-money-bill-transfer'),
+	(10,'Dashboard', 'fa-solid fa-money-bill-trend-up')
 SET IDENTITY_INSERT [App].[MenuItems] OFF;
 GO
 CREATE TABLE [App].[AssignRoleMenu](
@@ -49,16 +54,36 @@ CREATE TABLE [App].[AssignRoleMenu](
 	CONSTRAINT FK_App_AssignRoleMenu_MenuItemId FOREIGN KEY (MenuItemId) REFERENCES [App].[MenuItems](MenuItemId)
 )
 GO
+CREATE CLUSTERED INDEX IX_App_AssignRoleMenu_RoleId_MenuItemId ON [App].[AssignRoleMenu](RoleId ASC, MenuItemId ASC)
+GO
 INSERT INTO [App].[AssignRoleMenu]
 	(RoleId,MenuItemId)
 VALUES
 	(1,1),
 	(1,2),
-	(3,1)
+	(1,3),
+	(1,4),
+	(1,5),
+	(1,6),
+	(1,7),
+	(1,8),
+	(1,9),
+	(1,10),
+	(2,1),
+	(2,4),
+	(2,5),
+	(2,6),
+	(2,7),
+	(2,9),
+	(2,10),
+	(3,1),
+	(3,5),
+	(3,7),
+	(3,10)
 GO
 CREATE TABLE [Sec].[Users](
 	UserId BIGINT IDENTITY(1,1),
-	UserName VARCHAR(50) NOT NULL UNIQUE,
+	UserName VARCHAR(50) NOT NULL,
 	[Password] VARCHAR(MAX) NOT NULL,
 	[PasswordSalt] VARCHAR(MAX) NOT NULL,
 	RoleId INT NOT NULL,
@@ -68,6 +93,7 @@ CREATE TABLE [Sec].[Users](
 	IsActive BIT NOT NULL DEFAULT(1),
 	CreatedDate DATETIME NOT NULL DEFAULT (GETUTCDATE()),
 	CONSTRAINT PK_Sec_Users_Id PRIMARY KEY (UserId),
+	CONSTRAINT PK_Sec_Users_UserName UNIQUE (UserName),
 	CONSTRAINT FK_Sec_Users_RolId FOREIGN KEY (RoleId) REFERENCES [App].[Roles](RoleId)
 )
 GO
@@ -106,12 +132,13 @@ CREATE TABLE [App].[Members](
 	NickName VARCHAR(50),
 	ShirtNumber INT NOT NULL,
 	BTSideId SMALLINT NOT NULL,
-	PhotoUrl VARCHAR(MAX),
-	Birthday DATE NOT NULL,
-	Email VARCHAR(50) UNIQUE,
-	CellPhoneNumber VARCHAR(15) UNIQUE,
+	PhotoUrl VARCHAR(MAX) NULL,
+	Birthday DATE NULL,
+	Email VARCHAR(50) NULL,
+	CellPhoneNumber VARCHAR(15) NOT NULL,
 	CONSTRAINT PK_Fina_Members_Id PRIMARY KEY (MemberId),
-	CONSTRAINT UK_Fina_Members_MemberIdUserId UNIQUE (MemberId,UserId),
+	CONSTRAINT UQ_Fina_Members_MemberIdUserId UNIQUE (MemberId,UserId),
+	CONSTRAINT UQ_Fina_Members_CellPhoneNumber UNIQUE (CellPhoneNumber),
 	CONSTRAINT FK_Fina_Members_UserId FOREIGN KEY (UserId) REFERENCES [Sec].[Users](UserId),
 	CONSTRAINT FK_Fina_Members_BTSideId FOREIGN KEY (BTSideId) REFERENCES [Stats].[BattingThrowingSides](BTSideId)
 )
@@ -168,79 +195,179 @@ VALUES
 	(2,'Efectivo')	
 SET IDENTITY_INSERT [Fina].[PaymentMethods] OFF;
 GO
-CREATE TABLE [Fina].[ConceptTypes](
-	ConceptTypeId SMALLINT IDENTITY(1,1),
-	ConceptTypeKey VARCHAR(3) NOT NULL,
-	ConceptTypeDesc VARCHAR(50) NOT NULL,
-	CONSTRAINT PK_Fina_ConceptTypes_Id PRIMARY KEY (ConceptTypeId),
-	CONSTRAINT UQ_Fina_ConceptTypes_Desc UNIQUE (ConceptTypeDesc),
-	CONSTRAINT UQ_Fina_ConceptTypes_Key UNIQUE (ConceptTypeKey)
-)
-GO
-SET IDENTITY_INSERT [Fina].[ConceptTypes] ON;
-INSERT INTO [Fina].[ConceptTypes]
-	(ConceptTypeId,ConceptTypeKey,ConceptTypeDesc)
-VALUES
-	(1,'ING','Ingreso'),
-	(2,'GTO','Gasto')
-SET IDENTITY_INSERT [Fina].[ConceptTypes] OFF;
-GO
 CREATE TABLE [Fina].[Concepts](
 	ConceptId SMALLINT IDENTITY(1,1),
-	ConceptTypeId SMALLINT NOT NULL,
 	ConceptKey VARCHAR(3) NOT NULL,
 	ConceptDesc VARCHAR(50) NOT NULL,
 	CONSTRAINT PK_Fina_Concepts_Id PRIMARY KEY (ConceptId),
-	CONSTRAINT UQ_Fina_Concepts_Type_Key UNIQUE (ConceptTypeId,ConceptKey),
-	CONSTRAINT UQ_Fina_Concepts_Type_Desc UNIQUE (ConceptTypeId,ConceptDesc),
-	CONSTRAINT FK_Fina_Concepts_ConceptTypeId FOREIGN KEY (ConceptTypeId) REFERENCES [Fina].[ConceptTypes](ConceptTypeId)
+	CONSTRAINT UQ_Fina_Concepts_Type_Key UNIQUE (ConceptKey),
+	CONSTRAINT UQ_Fina_Concepts_Type_Desc UNIQUE (ConceptDesc)
 )
 GO
 INSERT INTO [Fina].[Concepts]
-	(ConceptTypeId,ConceptKey,ConceptDesc)
+	(ConceptKey,ConceptDesc)
 VALUES
-	(1,'INS','Inscripción'),
-	(1,'AMP','Ampayeo'),
-	(1,'UNI','Uniformes'),
-	(1,'AJT','Ajuste'),
-	(2,'HID','Hidratación'),
-	(2,'INS','Inscripción'),
-	(2,'AMP','Ampayeo'),
-	(2,'UNI','Uniformes')
+	('INS','Inscripción'),
+	('AMP','Ampayeo'),
+	('UNI','Uniformes'),
+	('AJT','Ajuste'),
+	('HID','Hidratación')
 GO
-CREATE TABLE [Fina].[Income](
-	IncomeId BIGINT IDENTITY(1,1),
+CREATE TABLE [Fina].[MovementTypes](
+	MovementTypeId SMALLINT IDENTITY(1,1),
+	MovementTypeKey VARCHAR(3) NOT NULL,
+	MovementTypeDesc VARCHAR(50) NOT NULL,
+	CONSTRAINT PK_MovementTypes_ConceptTypes_Id PRIMARY KEY (MovementTypeId),
+	CONSTRAINT UQ_MovementTypes_ConceptTypes_Desc UNIQUE (MovementTypeKey),
+	CONSTRAINT UQ_MovementTypes_ConceptTypes_Key UNIQUE (MovementTypeDesc)
+)
+GO
+SET IDENTITY_INSERT [Fina].[MovementTypes] ON;
+INSERT INTO [Fina].[MovementTypes]
+	(MovementTypeId,MovementTypeKey,MovementTypeDesc)
+VALUES
+	(1,'ING','Ingreso'),
+	(2,'GTO','Gasto')
+SET IDENTITY_INSERT [Fina].[MovementTypes] OFF;
+GO
+CREATE TABLE [Fina].[Movements](
+	MovementId BIGINT IDENTITY(1,1),
 	MemberId BIGINT NOT NULL,
+	MovementTypeId SMALLINT NOT NULL,
 	ConceptId SMALLINT NOT NULL,
 	MethodId SMALLINT NOT NULL,
-    IncomeDate DATETIME NOT NULL,
+    MovementDate DATE NOT NULL,
 	Amount DECIMAL(16,2) NOT NULL,
 	AdditionalComment VARCHAR(200),
     EvidenceUrl VARCHAR(MAX),
 	CreatedDate DATETIME NOT NULL DEFAULT(GETUTCDATE()),
 	CreatedBy BIGINT NOT NULL,
-	CONSTRAINT PK_Fina_Income_Id PRIMARY KEY (IncomeId),
-	CONSTRAINT FK_Fina_Income_MemberId FOREIGN KEY (MemberId) REFERENCES [App].[Members](MemberId),
-	CONSTRAINT FK_Fina_Income_ConceptId FOREIGN KEY (ConceptId) REFERENCES [Fina].[Concepts](ConceptId),
-	CONSTRAINT FK_Fina_Income_MethodId FOREIGN KEY (MethodId) REFERENCES [Fina].[PaymentMethods](MethodId),
-	CONSTRAINT FK_Fina_Income_UserId FOREIGN KEY (CreatedBy) REFERENCES [Sec].[Users](UserId)
+	CONSTRAINT PK_Fina_Movements_Id PRIMARY KEY (MovementId),
+	CONSTRAINT FK_Fina_Movements_MemberId FOREIGN KEY (MemberId) REFERENCES [App].[Members](MemberId),
+	CONSTRAINT FK_Fina_Movements_MovementTypeId FOREIGN KEY (MovementTypeId) REFERENCES [Fina].[MovementTypes](MovementTypeId),
+	CONSTRAINT FK_Fina_Movements_ConceptId FOREIGN KEY (ConceptId) REFERENCES [Fina].[Concepts](ConceptId),
+	CONSTRAINT FK_Fina_Movements_MethodId FOREIGN KEY (MethodId) REFERENCES [Fina].[PaymentMethods](MethodId),
+	CONSTRAINT FK_Fina_Movements_UserId FOREIGN KEY (CreatedBy) REFERENCES [Sec].[Users](UserId)
 )
 GO
-CREATE TABLE [Fina].[Bills](
-	BillId BIGINT IDENTITY(1,1),
-	MemberId BIGINT NOT NULL,
-	ConceptId SMALLINT NOT NULL,
-	MethodId SMALLINT NOT NULL,
-    IncomeDate DATETIME NOT NULL,
-	Amount DECIMAL(16,2) NOT NULL,
-	AdditionalComment VARCHAR(200),
-    EvidenceUrl VARCHAR(MAX),
-	CreatedDate DATETIME NOT NULL DEFAULT(GETUTCDATE()),
-	CreatedBy BIGINT NOT NULL,
-	CONSTRAINT PK_Fina_Bills_Id PRIMARY KEY (BillId),
-	CONSTRAINT FK_Fina_Bills_MemberId FOREIGN KEY (MemberId) REFERENCES [App].[Members](MemberId),
-	CONSTRAINT FK_Fina_Bills_ConceptId FOREIGN KEY (ConceptId) REFERENCES [Fina].[Concepts](ConceptId),
-	CONSTRAINT FK_Fina_Bills_MethodId FOREIGN KEY (MethodId) REFERENCES [Fina].[PaymentMethods](MethodId),
-	CONSTRAINT FK_Fina_Bills_UserId FOREIGN KEY (CreatedBy) REFERENCES [Sec].[Users](UserId)
-)
+-- =============================================
+-- Author:		Baruch Medina
+-- Create date: 2022/08/30
+-- Description:	Creación inicial de seleccion de los ingresos por id
+-- =============================================
+CREATE PROCEDURE [Fina].[SPSelMovements]
+	@MovementId BIGINT = NULL,
+	@Year INT = NULL,
+	@Month INT = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SELECT 
+		MOV.MovementId
+		, MOV.MemberId
+		, M.FullName
+		, MOV.ConceptId
+		, C.ConceptKey
+		, C.ConceptDesc
+		, MT.MovementTypeId
+		, MT.MovementTypeKey
+		, MT.MovementTypeDesc
+		, MOV.MethodId
+		, PM.MethodDesc
+		, MOV.MovementDate
+		, MOV.Amount
+		, MOV.AdditionalComment
+		, MOV.EvidenceUrl
+		, CAST(CAST(MOV.CreatedDate AS DATETIMEOFFSET) AT TIME ZONE 'CENTRAL STANDARD TIME (MEXICO)' AS DATETIME) CreatedDate
+		, MOV.CreatedBy CreatedById
+		, MU.NickName CreatedBy
+	FROM
+		[Fina].[Movements] MOV
+		INNER JOIN [App].Members M
+			ON MOV.MemberId = M.MemberId
+		INNER JOIN [Fina].Concepts C
+			ON MOV.ConceptId = C.ConceptId
+		INNER JOIN [Fina].[MovementTypes] MT
+			ON MOV.MovementTypeId = MT.MovementTypeId
+		INNER JOIN [Fina].PaymentMethods PM
+			ON MOV.MethodId = PM.MethodId
+		INNER JOIN [Sec].Users U
+			ON MOV.CreatedBy = U.UserId
+		INNER JOIN [App].Members MU
+			ON U.UserId = MU.UserId
+	WHERE
+		MOV.MovementId = COALESCE(@MovementId,MOV.MovementId)
+		AND YEAR(MOV.MovementDate) = COALESCE(@Year, YEAR(MOV.MovementDate))
+		AND MONTH(MOV.MovementDate) = COALESCE(@Month, MONTH(MOV.MovementDate))
+END
+GO
+-- =============================================
+-- Author:		Baruch Medina
+-- Create date: 2022/10/10
+-- Description:	Consulta de movimientos por mes y anio
+-- =============================================
+CREATE PROCEDURE [Fina].[SPSelMovementsByMonthYear]
+	@Year INT = NULL,
+	@Month INT = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SELECT 
+		MT.MovementTypeId
+		, MT.MovementTypeKey
+		, MT.MovementTypeDesc
+		, CONVERT(VARCHAR, MOV.MovementDate, 103) MovementDate
+		, SUM(MOV.Amount) Amount
+	FROM
+		[Fina].[Movements] MOV
+		INNER JOIN [Fina].[MovementTypes] MT
+			ON MOV.MovementTypeId = MT.MovementTypeId
+	WHERE		
+		YEAR(MOV.MovementDate) = COALESCE(@Year,YEAR(MOV.MovementDate))
+		AND MONTH(MOV.MovementDate) = COALESCE(@Month,MONTH(MOV.MovementDate))
+	GROUP BY
+		MOV.MovementDate,MT.MovementTypeId,MT.MovementTypeKey,MT.MovementTypeDesc
+	ORDER BY
+		MOV.MovementDate ASC
+END
+GO
+-- =============================================
+-- Author:		Baruch Medina
+-- Create date: 2022/08/30
+-- Description:	Creación inicial de seleccion de los miembros por id
+-- =============================================
+CREATE PROCEDURE [App].[SPSelMembers]
+	@MemberId BIGINT = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SELECT 
+		M.MemberId
+		,M.UserId
+		,U.RoleId
+		,R.RoleDescription RoleDesc
+		,M.FullName
+		,M.NickName
+		,M.ShirtNumber
+		,M.BTSideId
+		,BTS.BTSideDesc
+		,M.PhotoUrl
+		,M.Birthday
+		,M.Email
+		,M.CellPhoneNumber
+		,U.CanEdit
+		,U.IsVerified
+		,U.IsActive
+		,CAST(CAST(U.CreatedDate AS DATETIMEOFFSET) AT TIME ZONE 'CENTRAL STANDARD TIME (MEXICO)' AS DATETIME) CreatedDate
+	FROM
+		[App].[Members] M
+		INNER JOIN [Sec].[Users] U
+			ON M.UserId = U.UserId
+		INNER JOIN [App].[Roles] R
+			ON U.RoleId = R.RoleId
+		INNER JOIN [Stats].BattingThrowingSides BTS
+			ON M.BTSideId = BTS.BTSideId
+	WHERE
+		M.MemberId = COALESCE(@MemberId,M.MemberId)
+END
 GO
