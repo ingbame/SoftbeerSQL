@@ -158,16 +158,16 @@ GO
 INSERT INTO [Stats].[Positions]
 	(KeyValue,PositionDesc)
 VALUES
+	('P', 'Pitcher'),
+	('C', 'Catcher'),
+	('1B', '1st Base'),
+	('2B', '2nd Base'),
+	('SS', 'Shortstop'),
+	('3B', '3rd Base'),
 	('LF', 'Left Field'),
 	('CF', 'Center Field'),
 	('RF', 'Right Field'),
-	('SHF', 'Short Hitter Field'),
-	('3B', '3rd Base'),
-	('SS', 'Shortstop'),
-	('2B', '2nd Base'),
-	('1B', '1st Base'),
-	('P', 'Pitcher'),
-	('C', 'Catcher')
+	('SHF', 'Short Hitter Field')
 GO
 CREATE TABLE [Stats].[Roster](
 	RosterId BIGINT IDENTITY(1,1),
