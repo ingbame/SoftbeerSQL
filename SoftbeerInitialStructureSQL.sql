@@ -152,22 +152,23 @@ CREATE TABLE [Stats].[Positions](
 	PositionId SMALLINT IDENTITY(1,1),
 	KeyValue VARCHAR(3),
 	PositionDesc VARCHAR(50),
+	[Order] INT,
 	CONSTRAINT PK_Stats_Positions_Id PRIMARY KEY (PositionId)
 )
 GO
 INSERT INTO [Stats].[Positions]
-	(KeyValue,PositionDesc)
+	(KeyValue,PositionDesc,[Order])
 VALUES
-	('P', 'Pitcher'),
-	('C', 'Catcher'),
-	('1B', '1st Base'),
-	('2B', '2nd Base'),
-	('SS', 'Shortstop'),
-	('3B', '3rd Base'),
-	('LF', 'Left Field'),
-	('CF', 'Center Field'),
-	('RF', 'Right Field'),
-	('SHF', 'Short Hitter Field')
+	('P', 'Pitcher', 1),
+	('C', 'Catcher', 2),
+	('1B', '1st Base', 3),
+	('2B', '2nd Base', 4),
+	('SS', 'Shortstop', 6),
+	('3B', '3rd Base', 5),
+	('LF', 'Left Field', 7),
+	('CF', 'Center Field', 8),
+	('RF', 'Right Field', 9),
+	('SHF', 'Short Hitter Field', 10)
 GO
 CREATE TABLE [Stats].[Roster](
 	RosterId BIGINT IDENTITY(1,1),
